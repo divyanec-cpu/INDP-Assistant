@@ -7,15 +7,24 @@ Technical Brief's architecture or the Feature Pack's scope.
 
 ## Interaction model, v1
 
-A command-line question/answer loop. No graphical interface for this milestone:
+Two interfaces, both calling the same underlying `answer_question()` - not two separate
+implementations of the answer logic:
 
-1. User runs a script and is prompted for a question in plain English.
-2. The system prints an answer to the terminal, formatted per the rules below.
-3. User can ask another question or exit.
+1. **Command-line loop** (`scripts/ask.py`) - user runs a script, is prompted for a question in
+   plain English, the system prints an answer to the terminal formatted per the rules below, and
+   can ask another question or exit. Fastest path for local use.
+2. **Web page** (`scripts/webapp.py`, Feature Pack F7) - a single form-and-answer page, gated by
+   a shared password (HTTP Basic Auth - the browser's own native prompt, no custom login page).
+   Deliberately no JavaScript/client-side state: submitting the question reloads the page with
+   the answer shown below the form. Styled after a design mockup the user shared via claude.ai's
+   Design tool (dark navy/gold theme, regime badges, a citations list) - see
+   `docs/01-technical-brief.md`'s Deployment section for what was simplified from that mockup and
+   why. Deployed to Render so it's reachable from any network, not just the same Wi-Fi as the
+   original scope - see `docs/05-deployment-guide.md`.
 
-Rationale: the user is a first-time coder — the fastest path to something genuinely useful is a
-loop they can run and type into, not a UI. A local web page (for phone access) is a deferred,
-separate decision — see Feature Pack F7 and project memory.
+Rationale for staying server-rendered/no-JS even for the web page: the user is a first-time
+coder, and a full-page-reload form is far simpler to reason about and maintain than client-side
+state management, while still being genuinely usable from a phone browser.
 
 ## Answer contract (non-negotiable — this is the actual product)
 
@@ -76,5 +85,8 @@ format.
 
 ## Deferred (not designed yet)
 
-Any visual/graphical design work — this only applies once a GUI or web page is in scope, which
-is explicitly out of this milestone (Feature Pack F7).
+- Per-sentence inline citation linking (the design mockup's fuller vision - each claim linking
+  directly to its specific source card). Simplified for now to a flat citation list below the
+  answer, since the LLM returns one plain answer string, not per-sentence structured citations.
+- Multi-user accounts / per-user login (the web page uses one shared password for everyone).
+- Any client-side JavaScript/interactivity beyond plain form submission.

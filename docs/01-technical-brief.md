@@ -22,10 +22,9 @@ because it is non-negotiable.
 
 ## Non-goals for this milestone
 
-- No mobile app (Android or iOS) — explicitly deferred; see project memory. If phone access
-  is wanted later, the plan is a local web page reachable over Wi-Fi, not an installable app.
-- No multi-user accounts, no cloud hosting, no public deployment.
-- No GUI beyond a simple command-line question/answer loop for v1 (see Design Spec).
+- No mobile app (Android or iOS) — explicitly deferred; see project memory. Phone access is
+  instead a password-gated web page (Feature Pack F7 - see below), not an installable app.
+- No multi-user accounts (a single shared password gates the whole page, not per-user logins).
 
 ## Environment
 
@@ -49,34 +48,76 @@ processed_text/    Markdown mirror of raw_pdfs/, one .md per PDF, same subfolder
 config/
   .env             API keys (VOYAGE_API_KEY, ANTHROPIC_API_KEY). Gitignored, never printed.
   document_manifest.csv   Hand-maintained metadata, one row per source PDF (see Data model).
-chunked/           Generated chunks with citation metadata (chunks.jsonl). Gitignored,
-                   rebuildable from processed_text/ + the manifest via chunk_documents.py.
-chroma_store/      Chroma vector database (generated, gitignored, rebuildable from scratch).
-scripts/           Pipeline scripts (conversion, chunking, indexing, query).
+chunked/           Generated chunks with citation metadata (chunks.jsonl). Tracked in git
+                   (needed by the deployed app), rebuildable from processed_text/ + the
+                   manifest via chunk_documents.py.
+chroma_store/      Chroma vector database (generated, tracked in git for deployment,
+                   rebuildable from scratch via build_vector_index.py).
+scripts/
+  templates/       Jinja2 templates for the Flask web page (index.html).
 eval/              Test questions + expected regime/citations, and the script that runs them.
 docs/              This document set.
+Procfile           Tells Render how to start the app in production (gunicorn).
 ```
+
+`raw_pdfs/` and `processed_text/` are gitignored (not needed by the running app, only by the
+one-time ingestion pipeline) — see Deployment below for what is and isn't tracked, and why.
 
 ## Architecture (pipeline)
 
-1. **Ingestion** — `scripts/convert_pdfs.py` walks `raw_pdfs/` recursively, converts each PDF
-   to Markdown via Docling, writes to `processed_text/` mirroring the folder structure. Skips
-   files already converted (by modified-time comparison) so re-runs only touch new PDFs.
-2. **Manifest** — `config/document_manifest.csv` is the ground truth for which regime/version
-   each file belongs to. Filled in by hand (or with assistance), not inferred automatically,
-   because getting doc_name/status/regime wrong directly breaks citation correctness.
-3. **Chunking + indexing** (not yet built) — reads `processed_text/` + the manifest, splits
+1. ✅ **Ingestion** — `scripts/convert_pdfs.py` walks `raw_pdfs/` recursively, converts each PDF
+   to text (native text-layer extraction via pypdfium2, OCR fallback only for genuinely scanned
+   files), writes to `processed_text/` mirroring the folder structure.
+2. ✅ **Manifest** — `config/document_manifest.csv` is the ground truth for which regime/version
+   each file belongs to, hand-maintained.
+3. ✅ **Chunking** — `scripts/chunk_documents.py` reads `processed_text/` + the manifest, splits
    each document into chunks tagged with metadata (`doc_name`, `status`, `effective_date`,
-   `type`, `parent_doc`, `regime`, `chapter`, `para`), embeds via VoyageAI, stores in Chroma
-   at `chroma_store/` through `llama-index-vector-stores-chroma`.
-4. **Retrieval** (not yet built) — hybrid: vector similarity (Chroma) + keyword search (BM25
-   via `llama-index-retrievers-bm25`), merged.
-5. **Answer synthesis** (not yet built) — Claude (via `llama-index-llms-anthropic`) answers
-   strictly from retrieved chunks, enforcing the rules in the Design Spec: cite every claim,
-   name the regime first, apply the DPM cutover rule, flag draft DAP 2026, prefer amendments
-   over main text for the same para, say plainly when the answer isn't in context.
-6. **Interface** (not yet built) — command-line question/answer loop for v1. Phone/web access
-   is a deferred, separate decision (see project memory).
+   `type`, `parent_doc`, `regime`, `chapter`, `para`) into `chunked/chunks.jsonl`.
+4. ✅ **Embedding + indexing** — `scripts/build_vector_index.py` embeds each chunk via VoyageAI
+   (`voyage-law-2`) and stores vectors + metadata in Chroma at `chroma_store/`.
+5. ✅ **Hybrid retrieval** — `scripts/hybrid_retrieve.py` fuses Chroma vector search with a BM25
+   keyword retriever (reciprocal rank fusion).
+6. ✅ **Answer synthesis** — `scripts/ask.py` (`answer_question()`) calls Claude with the Design
+   Spec's answer contract as the system prompt, strictly from retrieved chunks.
+7. ✅ **Evaluation** — `scripts/run_eval.py` runs `eval/questions.json` against the real pipeline,
+   checking mechanical pass/fail signals per Design Spec rule.
+8. ✅ **Interface** — two ways to ask questions: `scripts/ask.py`'s command-line loop (local use),
+   and `scripts/webapp.py` (a password-gated Flask page, deployed to Render for phone/laptop
+   access from any network — see Deployment below and `docs/05-deployment-guide.md`).
+
+## Deployment
+
+Feature Pack F7 was originally scoped as "a local web page reachable over the same Wi-Fi" but
+was revised once the core pipeline was working and the user wanted it reachable by other people
+on *different* networks - that needs real internet-facing hosting, not just binding to
+`0.0.0.0` on the home network.
+
+- **Hosting:** Render (free tier), chosen over a quick tunnel (e.g. Cloudflare Tunnel) for a
+  stable, permanent URL that works even when the local PC is off. Tradeoff: needs the project in
+  git, pushed to GitHub, and the user creating accounts on both services themselves - account
+  creation and payment/signup details are things Claude cannot do on the user's behalf.
+- **What's tracked in git vs. not:** the deployed app needs `chroma_store/` (embedded vectors)
+  and `chunked/chunks.jsonl` (BM25 rebuilds from this at runtime) - both tracked despite being
+  "generated" artifacts, since re-embedding on every deploy would be slow and wasteful.
+  `raw_pdfs/` and `processed_text/` are only needed for the one-time ingestion pipeline, not the
+  running app, so both are gitignored to keep the repo lean.
+- **Production server:** `gunicorn` (via `Procfile`), not Flask's own dev server - `gunicorn`
+  does not run on Windows (relies on `os.fork`), so it's pinned in `requirements.txt` without
+  local verification; it only actually gets exercised on Render's Linux build.
+- **Access control:** a single shared password (`SHARED_ACCESS_PASSWORD` env var) via HTTP Basic
+  Auth, compared with `secrets.compare_digest` (timing-safe). Chosen because every question spends
+  real Voyage/Anthropic API credits once other people can reach the page - unrestricted public
+  access would mean unrestricted spending.
+- **Design:** `scripts/templates/index.html` is styled after a mockup the user shared via
+  claude.ai's Design tool (project "Defence Procurement Query Interface"), simplified to fit a
+  server-rendered, no-JavaScript page (full-page reload on submit) rather than the mockup's
+  React-based client state. Regime badges are derived dynamically from whichever `doc_name`s are
+  actually cited in a given answer (color-coded: green=DPM 2025, amber=DPM 2009, blue=DAP 2020,
+  red=Draft DAP 2026 with an explicit not-in-force warning), not hardcoded to one badge per
+  answer, since real answers can cite multiple regimes at once (Rule 8 version comparisons).
+- Full step-by-step instructions for the parts only the user can do (GitHub/Render account
+  creation, environment variable setup, the actual push and deploy) are in
+  `docs/05-deployment-guide.md`.
 
 ## Data model
 
@@ -236,7 +277,10 @@ Each record in `chunked/chunks.jsonl` (one per chunk) has: `doc_name`, `status`,
    Known gap: rule (g) version-comparison phrasing wasn't separately isolated as its own pass/
    fail check beyond "both regime names mentioned" - the two-sided contrast quality itself was
    only confirmed by eye, not mechanically. Worth a sharper check if this harness grows.
-9. (Later, separate decision) simple interface for phone access.
+9. ✅ **Phone/laptop access from any network — done.** See the Deployment section above and
+   `docs/05-deployment-guide.md`. Revised from the original "same Wi-Fi" scope once the user
+   wanted it reachable by other people on different networks: cloud-hosted on Render with a
+   password gate, rather than a local-network-only page.
 
 ## Known risks / issues log
 

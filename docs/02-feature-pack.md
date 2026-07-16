@@ -131,10 +131,29 @@ well. Full detail, including the one known gap (rule (g)'s two-sided contrast *q
 mechanically checked, only that both regime names appear), is in
 `docs/01-technical-brief.md` build-order step 8.
 
+## F7 — Phone/laptop access from any network
+
+Originally scoped as a local web page reachable over the same Wi-Fi; revised once the user
+wanted it reachable by other people on *different* networks, which needs real internet-facing
+hosting rather than binding to `0.0.0.0` on the home network.
+
+**Done when:** a password-gated web page is deployed somewhere reachable from any network, using
+the same answer pipeline as the CLI (not a reimplementation), with citations and regime
+information rendered clearly.
+
+**Status:** done, code-side. `scripts/webapp.py` (Flask, HTTP Basic Auth against a shared
+password) + `scripts/templates/index.html` (styled after a design mockup the user shared),
+deployed via `Procfile`/`gunicorn` to Render. Tested locally: the auth gate correctly blocks
+unauthenticated/wrong-password requests, and a real question flows through end-to-end with
+correct citation counts and regime badges rendered. The actual cloud deployment (GitHub push,
+Render account setup, environment variables, live test from a phone on a different network) is
+the user's own remaining steps - see `docs/05-deployment-guide.md`. A true installable iOS app
+would still require a Mac + Xcode + Apple Developer account, unavailable here; this web-page
+approach avoids that entirely.
+
 ## Out of scope for this milestone (explicitly deferred)
 
-- **F7 — Phone/mobile access.** Not designed, not built. When revisited, default direction is a
-  local web page reachable over Wi-Fi rather than an installable app (a true iOS app would
-  additionally require a Mac + Xcode + Apple Developer account, which isn't available here).
-- Any GUI beyond a plain command-line loop.
-- Multi-user support, authentication, or cloud hosting.
+- Multi-user accounts (a single shared password gates the whole page, not per-user logins).
+- Anything beyond the single-page, no-JavaScript interaction model - no client-side state,
+  no per-sentence inline citation linking (the design mockup's fuller vision, simplified for
+  this pass - see `docs/01-technical-brief.md`'s Deployment section).
