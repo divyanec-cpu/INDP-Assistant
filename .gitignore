@@ -1,0 +1,23 @@
+# Secrets — never share or upload this file
+config/.env
+
+# Virtual environment (disposable, can always be rebuilt)
+.venv/
+
+# Source PDFs and their one-time-pipeline text extraction — not needed by the
+# running app (only chroma_store/ and chunked/chunks.jsonl are), kept out of
+# the deployed repo to stay lean
+raw_pdfs/
+processed_text/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Claude Code's own local session/tool files — not part of the app
+.claude/
+
+# Pre-existing personal files from before this project started — unrelated
+# to the app, not needed for deployment
+New Microsoft Word Document.docx
+compass_artifact_wf-dd7a6a08-de98-43c4-acaf-5fd50ad14c2c_text_markdown.md

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Defence Procurement Knowledge Base</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #0B1B33; }
+  body { font-family: 'Source Sans 3', 'Segoe UI', sans-serif; color: #E9ECF2; }
+  a { color: #C9A227; text-decoration: none; }
+  a:hover { color: #E3C766; text-decoration: underline; }
+  ::selection { background: #C9A227; color: #0B1B33; }
+  @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .page { min-height: 100vh; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; justify-content: space-between;
+           padding: 18px 28px; border-bottom: 1px solid rgba(201,162,39,0.25); background: #081426; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .mark { width: 38px; height: 38px; border: 1.5px solid #C9A227; display: flex; align-items: center;
+          justify-content: center; font-family: 'Playfair Display', serif; font-weight: 700;
+          font-size: 17px; color: #C9A227; flex-shrink: 0; }
+  .brand-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600;
+                 letter-spacing: 0.02em; color: #F4F6FA; }
+  .brand-subtitle { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #8FA0BC; }
+  .official { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #C9A227;
+              border: 1px solid rgba(201,162,39,0.45); padding: 5px 12px; white-space: nowrap; }
+
+  main { flex: 1; max-width: 900px; width: 100%; margin: 0 auto; padding: 32px 24px 64px; box-sizing: border-box; }
+
+  .search-label { display: block; font-family: 'Playfair Display', serif; font-size: 23px;
+                  font-weight: 600; color: #F4F6FA; margin-bottom: 14px; }
+  form.ask { display: flex; align-items: stretch; border: 1.5px solid rgba(201,162,39,0.55); background: #0F2242; }
+  form.ask input[type="text"] { flex: 1; background: transparent; border: none; outline: none; color: #F4F6FA;
+                                 font-family: 'Source Sans 3', sans-serif; font-size: 16px; padding: 14px 16px; min-width: 0; }
+  form.ask button { border: none; cursor: pointer; background: #C9A227; color: #0B1B33;
+                     font-family: 'Source Sans 3', sans-serif; font-weight: 600; font-size: 13px;
+                     letter-spacing: 0.08em; text-transform: uppercase; padding: 0 22px; }
+  form.ask button:hover { background: #E3C766; }
+
+  .suggestions { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .suggestions span { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #8FA0BC; }
+  .suggestions form { display: inline; }
+  .suggestions button { cursor: pointer; background: transparent; border: 1px solid #24406B; color: #B9C6DA;
+                         font-family: 'Source Sans 3', sans-serif; font-size: 12.5px; padding: 5px 12px; }
+  .suggestions button:hover { border-color: #C9A227; color: #E3C766; }
+
+  .answer-panel { margin-top: 32px; background: #F7F5EF; color: #1C2432; border-top: 3px solid #C9A227; }
+  .answer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
+                 padding: 22px 26px 0; flex-wrap: wrap; }
+  .answer-eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6B6455; margin-bottom: 6px; }
+  .answer-question { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600;
+                      line-height: 1.35; margin: 0; color: #101828; max-width: 560px; }
+  .badges { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; font-size: 11.5px;
+           font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border-width: 1px; border-style: solid; }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .draft-warning { font-size: 11px; color: #8A6D1C; font-style: italic; }
+
+  .answer-body { padding: 16px 26px 22px; font-size: 15.5px; line-height: 1.68; color: #26303F;
+                 white-space: pre-wrap; }
+
+  .citations { margin-top: 0; }
+  .citations-title { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #8FA0BC;
+                      margin: 28px 0 10px; }
+  .citation-list { display: flex; flex-direction: column; gap: 8px; }
+  .citation { display: flex; align-items: center; gap: 10px; border: 1px solid #1C3357; background: #0F2242;
+              padding: 10px 14px; font-size: 13px; }
+  .citation .tag { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px;
+                    border-width: 1px; border-style: solid; flex-shrink: 0; }
+  .citation .doc { font-weight: 600; color: #E9ECF2; }
+  .citation .ref { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #A7B4C9; }
+
+  .footer-note { margin-top: 40px; font-size: 12px; color: #63748F; text-align: center; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="brand">
+      <div class="mark">DP</div>
+      <div>
+        <div class="brand-title">Defence Procurement Knowledge Base</div>
+        <div class="brand-subtitle">Query &amp; Reference Service</div>
+      </div>
+    </div>
+    <div class="official">Personal Reference Tool</div>
+  </header>
+
+  <main>
+    <label class="search-label" for="question">Ask the knowledge base</label>
+    <form class="ask" method="post" action="/">
+      <input type="text" id="question" name="question" value="{{ question }}"
+             placeholder="e.g. What is the LD ceiling under DPM 2025?">
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="suggestions">
+      <span>Try:</span>
+      {% for s in suggestions %}
+      <form method="post" action="/">
+        <input type="hidden" name="question" value="{{ s }}">
+        <button type="submit">{{ s }}</button>
+      </form>
+      {% endfor %}
+    </div>
+
+    {% if answer %}
+    <div class="answer-panel">
+      <div class="answer-head">
+        <div>
+          <div class="answer-eyebrow">Answer</div>
+          <h2 class="answer-question">{{ question }}</h2>
+        </div>
+        <div class="badges">
+          {% for b in badges %}
+          <div class="badge" style="background: {{ b.bg }}; color: {{ b.fg }}; border-color: {{ b.border }};">
+            <span class="dot" style="background: {{ b.dot }};"></span>
+            {{ b.label }}
+          </div>
+          {% if b.is_draft %}
+          <div class="draft-warning">Draft — not yet in force. Verify before relying.</div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="answer-body">{{ answer }}</div>
+
+      {% if citations %}
+      <div style="padding: 0 26px 22px;">
+        <div class="citations-title">{{ citations|length }} citation{{ 's' if citations|length != 1 else '' }}</div>
+        <div class="citation-list">
+          {% for c in citations %}
+          <div class="citation">
+            <span class="tag" style="background: {{ c.style.bg }}; color: {{ c.style.fg }}; border-color: {{ c.style.border }};">{{ c.style.label }}</span>
+            <span class="doc">{{ c.doc_name }}</span>
+            {% if c.reference %}<span class="ref">{{ c.reference }}</span>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="footer-note">
+      Answers are generated from a fixed set of procurement documents and may be incomplete or imprecise.
+      Verify anything load-bearing against the source regulation before relying on it.
+    </div>
+  </main>
+
+</div>
+</body>
+</html>

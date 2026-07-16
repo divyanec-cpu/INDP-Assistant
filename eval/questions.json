@@ -1,0 +1,112 @@
+[
+  {
+    "id": "dpm2025_delivery_schedule",
+    "question": "What is the delivery schedule for defence contracts under DPM 2025?",
+    "rules_tested": ["a", "b"],
+    "expected_regime_mentions": ["DPM 2025"],
+    "forbidden_regime_mentions": [],
+    "must_contain_citation": true,
+    "must_flag_draft_not_in_force": false,
+    "must_be_rule7_refusal": false,
+    "required_phrases": []
+  },
+  {
+    "id": "dpm_cutover_pre",
+    "question": "An RFP for spares was issued on 15 September 2025 and is still pending award. Which procurement manual governs it?",
+    "rules_tested": ["c"],
+    "expected_regime_mentions": ["DPM 2009"],
+    "forbidden_regime_mentions": [],
+    "must_contain_citation": true,
+    "must_flag_draft_not_in_force": false,
+    "must_be_rule7_refusal": false,
+    "required_phrases": []
+  },
+  {
+    "id": "dpm_cutover_reissued",
+    "question": "An RFP was issued on 1 October 2025, then retracted and reissued on 5 November 2025. Which procurement manual governs it?",
+    "rules_tested": ["c"],
+    "expected_regime_mentions": ["DPM 2025"],
+    "forbidden_regime_mentions": [],
+    "must_contain_citation": true,
+    "must_flag_draft_not_in_force": false,
+    "must_be_rule7_refusal": false,
+    "required_phrases": []
+  },
+  {
+    "id": "dap2020_weapons_banned_import",
+    "question": "Under DAP 2020, what weapons or platforms are banned for import?",
+    "rules_tested": ["a", "e"],
+    "expected_regime_mentions": ["DAP 2020"],
+    "forbidden_regime_mentions": ["DPM 2025", "DPM 2009"],
+    "must_contain_citation": true,
+    "must_flag_draft_not_in_force": false,
+    "must_be_rule7_refusal": false,
+    "required_phrases": []
+  },
+  {
+    "id": "draft_dap2026_in_force",
+    "question": "Is the draft DAP 2026 currently in force?",
+    "rules_tested": ["d"],
+    "expected_regime_mentions": ["DAP 2020"],
+    "forbidden_regime_mentions": [],
+    "must_contain_citation": true,
+    "must_flag_draft_not_in_force": true,
+    "must_be_rule7_refusal": false,
+    "required_phrases": []
+  },
+  {
+    "id": "revenue_capital_mixing_trap",
+    "question": "What are the acquisition categories in defence procurement?",
+    "rules_tested": ["3"],
+    "expected_regime_mentions": ["DAP 2020"],
+    "forbidden_regime_mentions": [],
+    "must_contain_citation": true,
+    "must_flag_draft_not_in_force": false,
+    "must_be_rule7_refusal": false,
+    "required_phrases": []
+  },
+  {
+    "id": "dpm2009_l1_tax_exclusion",
+    "question": "Under DPM 2009, are taxes and duties included when determining the lowest bidder (L-1)?",
+    "rules_tested": ["b"],
+    "expected_regime_mentions": ["DPM 2009"],
+    "forbidden_regime_mentions": [],
+    "must_contain_citation": true,
+    "must_flag_draft_not_in_force": false,
+    "must_be_rule7_refusal": false,
+    "required_phrases": []
+  },
+  {
+    "id": "dpm2009_vs_dpm2025_l1_comparison",
+    "question": "How does the treatment of taxes and duties in L-1 (lowest bidder) determination compare between DPM 2009 and DPM 2025?",
+    "rules_tested": ["g"],
+    "expected_regime_mentions": ["DPM 2009", "DPM 2025"],
+    "forbidden_regime_mentions": [],
+    "must_contain_citation": true,
+    "must_flag_draft_not_in_force": false,
+    "must_be_rule7_refusal": false,
+    "required_phrases": []
+  },
+  {
+    "id": "out_of_scope_pension",
+    "question": "What are the pension rules for retired defence personnel?",
+    "rules_tested": ["f"],
+    "expected_regime_mentions": [],
+    "forbidden_regime_mentions": [],
+    "must_contain_citation": false,
+    "must_flag_draft_not_in_force": false,
+    "must_be_rule7_refusal": true,
+    "required_phrases": []
+  },
+  {
+    "id": "keyword_pbg_warranty_60_days",
+    "question": "How long after the warranty period must the Performance Bank Guarantee remain valid under DPM 2025?",
+    "rules_tested": ["retrieval-regression"],
+    "expected_regime_mentions": ["DPM 2025"],
+    "forbidden_regime_mentions": [],
+    "must_contain_citation": true,
+    "must_flag_draft_not_in_force": false,
+    "must_be_rule7_refusal": false,
+    "required_phrases": ["60 days"]
+  }
+]
