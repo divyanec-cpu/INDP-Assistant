@@ -151,7 +151,6 @@ python-dateutil==2.9.0.post0
 python-docx==1.2.0
 python-dotenv==1.2.2
 python-pptx==1.0.2
-pywin32==312
 PyYAML==6.0.3
 rank-bm25==0.2.2
 rapidocr==3.9.1
